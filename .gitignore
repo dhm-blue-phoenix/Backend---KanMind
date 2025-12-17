@@ -1,0 +1,15 @@
+# created by virtualenv automatically
+.idea
+.venv
+
+auth_app/__pycache__
+auth_app/api/__pycache__
+auth_app/migrations
+
+board_app/__pycache__
+board_app/api/__pycache__
+board_app/migrations
+
+core/__pycache__
+
+db.sqlite3

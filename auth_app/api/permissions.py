@@ -1,0 +1,1 @@
+# No custom permissions needed for auth_app
