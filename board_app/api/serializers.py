@@ -1,7 +1,3 @@
-# Standard library
-from __future__ import annotations
-from typing import Any, Dict
-
 # Django
 from django.contrib.auth.models import User
 
@@ -13,6 +9,10 @@ from board_app.models import Board, Task, Comment, STATUS_CHOICES, PRIORITY_CHOI
 
 
 class UserEmailCheckSerializer(serializers.ModelSerializer):
+    """
+    Serializer for checking user by email.
+    Returns id, email, and fullname.
+    """
     fullname = serializers.SerializerMethodField()
 
     class Meta:
@@ -24,6 +24,10 @@ class UserEmailCheckSerializer(serializers.ModelSerializer):
 
 
 class BoardSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Board list/create.
+    Handles creation with members and custom representation for stats.
+    """
     class Meta:
         model = Board
         fields = ['id', 'title', 'members', 'owner_id']
@@ -50,6 +54,10 @@ class BoardSerializer(serializers.ModelSerializer):
 
 
 class BoardDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for detailed board view.
+    Includes nested members and tasks.
+    """
     members = UserEmailCheckSerializer(many=True, read_only=True)
     tasks = serializers.SerializerMethodField()
 
@@ -63,6 +71,10 @@ class BoardDetailSerializer(serializers.ModelSerializer):
 
 
 class BoardUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating board (title/members).
+    Partial updates allowed.
+    """
     members = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
 
     class Meta:
@@ -71,6 +83,10 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Task representation.
+    Includes nested assignee/reviewer and custom output.
+    """
     assignee = UserEmailCheckSerializer(read_only=True)
     reviewer = UserEmailCheckSerializer(read_only=True)
 
@@ -97,6 +113,10 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating tasks.
+    Validates status, priority, assignee/reviewer membership.
+    """
     assignee_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='assignee')
     reviewer_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='reviewer')
 
@@ -147,6 +167,10 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
 
 class TaskUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating tasks (partial).
+    Validates status, priority, assignee/reviewer.
+    """
     assignee_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='assignee')
     reviewer_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='reviewer')
 
@@ -183,6 +207,10 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Comment representation.
+    Author as full name.
+    """
     author = serializers.SerializerMethodField()
 
     class Meta:
@@ -194,6 +222,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating comments.
+    Content only, author/task from context.
+    """
     class Meta:
         model = Comment
         fields = ['content']

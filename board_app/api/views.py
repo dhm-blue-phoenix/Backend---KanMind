@@ -1,7 +1,5 @@
-# Standard library
-from typing import Any
-
 # Django
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -24,6 +22,12 @@ from board_app.models import Board, Task, Comment
 
 
 class EmailCheckView(APIView):
+    """
+    GET /api/email-check/?email=...
+    Checks if an email is registered.
+    Returns user data if exists (200), else 404.
+    Requires authentication.
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request: HttpRequest) -> Response:
@@ -45,15 +49,32 @@ class EmailCheckView(APIView):
 
 
 class BoardListCreateView(generics.ListCreateAPIView):
+    """
+    GET /api/boards/
+    Lists all boards the authenticated user owns or is member of.
+
+    POST /api/boards/
+    Creates a new board. User is set as owner and added as member.
+    """
     serializer_class = BoardSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        return Board.objects.filter(owner=user) | Board.objects.filter(members=user)
+        return Board.objects.filter(Q(owner=user) | Q(members=user)).distinct()
 
 
 class BoardDetailView(APIView):
+    """
+    GET /api/boards/{board_id}/
+    Returns detailed board info including members and tasks.
+
+    PATCH /api/boards/{board_id}/
+    Updates title and/or members (removes non-listed members).
+
+    DELETE /api/boards/{board_id}/
+    Deletes the board (only by owner).
+    """
     permission_classes = [IsAuthenticated, IsBoardMember]
 
     def get(self, request, board_id):
@@ -86,11 +107,20 @@ class BoardDetailView(APIView):
 
 
 class TaskCreateView(generics.CreateAPIView):
+    """
+    POST /api/tasks/
+    Creates a new task in a board.
+    Only board members can create tasks.
+    """
     serializer_class = TaskCreateSerializer
     permission_classes = [IsAuthenticated, IsBoardMember]
 
 
 class AssignedToMeTasksView(generics.ListAPIView):
+    """
+    GET /api/tasks/assigned-to-me/
+    Lists tasks where the user is the assignee.
+    """
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
@@ -99,6 +129,10 @@ class AssignedToMeTasksView(generics.ListAPIView):
 
 
 class ReviewingTasksView(generics.ListAPIView):
+    """
+    GET /api/tasks/reviewing/
+    Lists tasks where the user is the reviewer.
+    """
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
@@ -107,6 +141,13 @@ class ReviewingTasksView(generics.ListAPIView):
 
 
 class TaskDetailView(APIView):
+    """
+    PATCH /api/tasks/{task_id}/
+    Updates an existing task (partial, only board members).
+
+    DELETE /api/tasks/{task_id}/
+    Deletes a task (only creator or board owner).
+    """
     permission_classes = [IsAuthenticated, IsBoardMember]
 
     def get_object(self, task_id):
@@ -135,6 +176,13 @@ class TaskDetailView(APIView):
 
 
 class TaskCommentsListCreateView(APIView):
+    """
+    GET /api/tasks/{task_id}/comments/
+    Lists all comments for a task.
+
+    POST /api/tasks/{task_id}/comments/
+    Creates a new comment for a task (only board members).
+    """
     permission_classes = [IsAuthenticated, IsBoardMember]
 
     def get_task(self, task_id):
@@ -162,6 +210,10 @@ class TaskCommentsListCreateView(APIView):
 
 
 class TaskCommentDeleteView(APIView):
+    """
+    DELETE /api/tasks/{task_id}/comments/{comment_id}/
+    Deletes a comment (only by author).
+    """
     permission_classes = [IsAuthenticated, IsCommentAuthor]
 
     def get_comment(self, comment_id):

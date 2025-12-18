@@ -1,5 +1,3 @@
-"""URL configuration for core project."""
-
 # Django
 from django.contrib import admin
 from django.urls import path, include
@@ -11,6 +9,3 @@ urlpatterns = [
     path('api/', include('auth_app.api.urls')),
     path('api/', include('board_app.api.urls')),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

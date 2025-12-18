@@ -7,7 +7,8 @@ from board_app.models import Board, Task, Comment
 
 class IsBoardMember(BasePermission):
     """
-    Allows access if user is member or owner of the board.
+    Grants access if the user is a member or owner of the board.
+    Works for Board, Task, and Comment objects.
     """
     def has_object_permission(self, request, view, obj):
         if isinstance(obj, Board):
@@ -21,7 +22,7 @@ class IsBoardMember(BasePermission):
 
 class IsBoardOwner(BasePermission):
     """
-    Allows access only if user is owner of the board.
+    Grants access only if the user is the owner of the board.
     """
     def has_object_permission(self, request, view, obj):
         if isinstance(obj, Board):
@@ -31,7 +32,7 @@ class IsBoardOwner(BasePermission):
 
 class IsTaskCreatorOrBoardOwner(BasePermission):
     """
-    Allows access if user is task creator or board owner.
+    Grants access if the user is the task creator or board owner.
     """
     def has_object_permission(self, request, view, obj):
         if isinstance(obj, Task):
@@ -41,7 +42,7 @@ class IsTaskCreatorOrBoardOwner(BasePermission):
 
 class IsCommentAuthor(BasePermission):
     """
-    Allows access if user is author of the comment.
+    Grants access if the user is the author of the comment.
     """
     def has_object_permission(self, request, view, obj):
         if isinstance(obj, Comment):

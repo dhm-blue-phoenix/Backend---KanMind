@@ -1,7 +1,3 @@
-# Standard library
-from __future__ import annotations
-from typing import Any
-
 # Django
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -20,14 +16,13 @@ from .serializers import UserRegistrationSerializer
 
 class UserRegistrationView(APIView):
     """
-        POST /api/registration/
-        Register a new user with fullname, email and password.
-        Returns authentication token and user data immediately after successful registration.
+    Handles user registration.
+    POST: Creates a new user and returns token/user data.
     """
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Response:
+    def post(self, request, *args, **kwargs):
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_save = serializer.save()
@@ -43,16 +38,20 @@ class UserRegistrationView(APIView):
 
 
 class UserLoginView(APIView):
+    """
+    Handles user login.
+    POST: Authenticates user and returns token/user data.
+    """
     permission_classes = [AllowAny]
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Response:
-        email: str | None = request.data.get("email")
-        password: str | None = request.data.get("password")
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        password = request.data.get("password")
 
         if not email or not password:
             return Response({"message": "Email or password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user: User | None = authenticate(request, username=email, password=password)
+        user = authenticate(request, username=email, password=password)
 
         if user is not None:
             if user.is_active:

@@ -16,6 +16,10 @@ PRIORITY_CHOICES = [
 ]
 
 class Board(models.Model):
+    """
+    Model for boards.
+    Has title, owner, and many-to-many members.
+    """
     title = models.CharField(max_length=200)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_boards')
     members = models.ManyToManyField(User, related_name='boards', blank=True)
@@ -29,7 +33,7 @@ class Board(models.Model):
         return self.title
 
     def member_count(self):
-        return self.members.count() + 1  # Owner inklusive
+        return self.members.count()
 
     def task_count(self):
         return self.tasks.count()
@@ -42,6 +46,10 @@ class Board(models.Model):
 
 
 class Task(models.Model):
+    """
+    Model for tasks.
+    Belongs to a board, has status, priority, assignee, reviewer.
+    """
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='tasks')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_tasks')
     title = models.CharField(max_length=200)
@@ -65,6 +73,10 @@ class Task(models.Model):
 
 
 class Comment(models.Model):
+    """
+    Model for comments.
+    Belongs to a task, has author and content.
+    """
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField()
