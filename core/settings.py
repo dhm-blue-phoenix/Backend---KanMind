@@ -1,16 +1,12 @@
-"""
-Django settings for core project.
-"""
-
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-change-this-in-production'
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-DEBUG = True
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,100.108.243.93').split(',')
 
-ALLOWED_HOSTS = ['100.108.243.93', 'localhost', '127.0.0.1']
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
