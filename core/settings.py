@@ -34,18 +34,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if os.getenv('CORS_ALLOW_ALL_ORIGINS') == 'True':
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOWED_ORIGINS = os.getenv(
-        'CORS_ALLOWED_ORIGINS',
-        'http://localhost:5500,http://127.0.0.1:5500,http://100.108.243.93:5500'
-    ).split(',')
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') or [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    'CSRF_TRUSTED_ORIGINS',
-    'http://localhost:5500,http://127.0.0.1:5500,http://100.108.243.93:5500'
-).split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') or [
+    "http://localhost:5500",
+]
 
 ROOT_URLCONF = 'core.urls'
 
