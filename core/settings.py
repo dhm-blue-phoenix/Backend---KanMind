@@ -34,13 +34,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') or [
+CORS_ALLOWED_ORIGINS = [
+    "https://dominik-mozelt.developerakademie.net",
+    "https://backend-kanmind.onrender.com",
     "http://localhost:5500",
     "http://127.0.0.1:5500",
+    "http://100.108.243.93:5500",
 ]
 
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') or [
-    "http://localhost:5500",
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://dominik-mozelt.developerakademie.net",
+    "https://backend-kanmind.onrender.com",
 ]
 
 ROOT_URLCONF = 'core.urls'
