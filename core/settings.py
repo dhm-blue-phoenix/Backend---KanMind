@@ -3,7 +3,7 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'False'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,100.108.243.93').split(',')
 
@@ -34,11 +34,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://100.108.243.93:5500",
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-]
+if os.getenv('CORS_ALLOW_ALL_ORIGINS') == 'True':
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:5500,http://127.0.0.1:5500,http://100.108.243.93:5500'
+    ).split(',')
+
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:5500,http://127.0.0.1:5500,http://100.108.243.93:5500'
+).split(',')
 
 ROOT_URLCONF = 'core.urls'
 
