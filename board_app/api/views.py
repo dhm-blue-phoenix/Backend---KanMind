@@ -61,6 +61,8 @@ class BoardListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if not user.is_authenticated:
+            return Board.objects.none()
         return Board.objects.filter(Q(owner=user) | Q(members=user)).distinct()
 
 
@@ -125,7 +127,10 @@ class AssignedToMeTasksView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Task.objects.filter(assignee=self.request.user)
+        user = self.request.user
+        if not user.is_authenticated:
+            return Task.objects.none()
+        return Task.objects.filter(assignee=user)
 
 
 class ReviewingTasksView(generics.ListAPIView):
@@ -137,7 +142,10 @@ class ReviewingTasksView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Task.objects.filter(reviewer=self.request.user)
+        user = self.request.user
+        if not user.is_authenticated:
+            return Task.objects.none()
+        return Task.objects.filter(reviewer=user)
 
 
 class TaskDetailView(APIView):
