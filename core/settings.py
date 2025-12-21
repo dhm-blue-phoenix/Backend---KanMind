@@ -1,13 +1,16 @@
 from pathlib import Path
+import dj_database_url
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-change-this-in-production'
+DEBUG = os.getenv('DEBUG', 'False') == 'False'
 
-DEBUG = False
+ALLOWED_HOSTS = os.getenv(
+    'ALLOWED_HOSTS', 'localhost,127.0.0.1,100.108.243.93').split(',')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+SECRET_KEY = os.getenv(
+    'SECRET_KEY', 'django-insecure-change-this-in-production')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -34,6 +37,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "https://dominik-mozelt.developerakademie.net",
+    "https://backend-kanmind.onrender.com",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://100.108.243.93:5500",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://dominik-mozelt.developerakademie.net",
+    "https://backend-kanmind.onrender.com",
+]
 ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
@@ -53,12 +68,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
