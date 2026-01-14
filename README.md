@@ -1,9 +1,14 @@
 # Django KanMin API
 
-<br>
+Welcome to the backend of the KanMind project! This Django-based API provides the server logic for an application. It allows managing boards, tasks and users through RESTful endpoints.
 
-## Installation
-1. Clone the repository:
+## Technologies
+- Django: Web framework for Python
+- Django REST Framework: For API development
+- SQLite: Database (default for local development)
+
+## Quick start
+1. Clone the repository and navigate to the folder:
       ```
       git clone https://github.com/dhm-blue-phoenix/Backend---KanMind.git
       cd Backend---KanMind

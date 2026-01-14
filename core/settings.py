@@ -1,16 +1,12 @@
 from pathlib import Path
-import dj_database_url
-import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = os.getenv('DEBUG', 'False') == 'False'
+SECRET_KEY = 'django-insecure-change-this-in-production'
 
-ALLOWED_HOSTS = os.getenv(
-    'ALLOWED_HOSTS', 'localhost,127.0.0.1,100.108.243.93').split(',')
+DEBUG = False
 
-SECRET_KEY = os.getenv(
-    'SECRET_KEY', 'django-insecure-change-this-in-production')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -38,17 +34,10 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://dominik-mozelt.developerakademie.net",
-    "https://backend-kanmind.onrender.com",
     "http://localhost:5500",
     "http://127.0.0.1:5500",
-    "http://100.108.243.93:5500",
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://dominik-mozelt.developerakademie.net",
-    "https://backend-kanmind.onrender.com",
-]
 ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
@@ -68,17 +57,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-if os.getenv('DATABASE_URL'):
-    DATABASES = {
-        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
