@@ -8,6 +8,7 @@ auth_app/migrations
 
 board_app/__pycache__
 board_app/api/__pycache__
+board_app/migrations/__pycache__
 board_app/migrations
 
 core/__pycache__

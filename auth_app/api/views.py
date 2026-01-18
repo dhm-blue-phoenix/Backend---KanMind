@@ -59,9 +59,9 @@ class UserLoginView(APIView):
 
                 return Response({
                     'token': token.key,
-                    'user_id': user.id,
                     'fullname': user.get_full_name(),
                     'email': user.email,
+                    'user_id': user.id,
                 }, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)

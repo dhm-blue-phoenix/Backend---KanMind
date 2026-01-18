@@ -53,35 +53,6 @@ class BoardSerializer(serializers.ModelSerializer):
         }
 
 
-class BoardDetailSerializer(serializers.ModelSerializer):
-    """
-    Serializer for detailed board view.
-    Includes nested members and tasks.
-    """
-    members = UserEmailCheckSerializer(many=True, read_only=True)
-    tasks = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Board
-        fields = ['id', 'title', 'owner_id', 'members', 'tasks']
-
-    def get_tasks(self, obj):
-        tasks = obj.tasks.all().select_related('assignee', 'reviewer')
-        return TaskSerializer(tasks, many=True).data
-
-
-class BoardUpdateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for updating board (title/members).
-    Partial updates allowed.
-    """
-    members = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
-
-    class Meta:
-        model = Board
-        fields = ['title', 'members']
-
-
 class TaskSerializer(serializers.ModelSerializer):
     """
     Serializer for Task representation.
@@ -111,6 +82,43 @@ class TaskSerializer(serializers.ModelSerializer):
             "comments_count": instance.comments_count()
         }
 
+class BoardDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for detailed board view.
+    Includes nested members and tasks.
+    """
+    owner_data = UserEmailCheckSerializer(source='owner', read_only=True)
+    members_data = UserEmailCheckSerializer(source='members', many=True, read_only=True)
+    tasks = TaskSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Board
+        fields = ['id', 'title', 'owner_data', 'members_data', 'tasks']  # ← genau diese Felder!
+        read_only_fields = ['id', 'owner_data', 'members_data', 'tasks']
+
+    # Optional: Bei PATCH Title + Members aktualisieren
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        if 'members' in validated_data:
+            instance.members.set(validated_data['members'])
+        instance.save()
+        return instance
+
+
+class BoardUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating board (title/members).
+    Partial updates allowed.
+    """
+    members = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
+
+    class Meta:
+        model = Board
+        fields = ['title', 'members']
+
+
+
+
 
 class TaskCreateSerializer(serializers.ModelSerializer):
     """
@@ -123,8 +131,8 @@ class TaskCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = [
-            'board', 'title', 'description', 'status', 'priority',
-            'assignee_id', 'reviewer_id', 'due_date'
+            'id', 'board', 'title', 'description', 'status', 'priority',
+            'assignee_id', 'reviewer_id', 'due_date', 'comments_count',
         ]
 
     def validate_status(self, value):

@@ -79,33 +79,52 @@ class BoardDetailView(APIView):
     """
     permission_classes = [IsAuthenticated, IsBoardMember]
 
+    def get_object(self, board_id):
+        try:
+            return Board.objects.get(id=board_id)
+        except Board.DoesNotExist:
+            return None
+
     def get(self, request, board_id):
         board = self.get_object(board_id)
+        if not board:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = BoardDetailSerializer(board)
         return Response(serializer.data)
 
     def patch(self, request, board_id):
         board = self.get_object(board_id)
+        if not board:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
         serializer = BoardUpdateSerializer(board, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        if 'members' in request.data:
+
+        # Explizit aktualisieren
+        if 'title' in serializer.validated_data:
+            board.title = serializer.validated_data['title']
+
+        board.save()
+
+        if 'members' in serializer.validated_data:
             board.members.set(serializer.validated_data['members'])
-        serializer.save()
-        return Response(BoardSerializer(board).data)
+
+        # Board neu laden für frische Response
+        board.refresh_from_db()
+
+        return Response(BoardDetailSerializer(board).data)
 
     def delete(self, request, board_id):
         board = self.get_object(board_id)
-        self.check_object_permissions(request, board)  # Extra für Owner, da IsBoardMember nicht genug
+        if not board:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
         if board.owner != request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
-        board.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def get_object(self, board_id):
-        try:
-            return Board.objects.get(id=board_id)
-        except Board.DoesNotExist:
-            raise Response(status=status.HTTP_404_NOT_FOUND)
+        board.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TaskCreateView(generics.CreateAPIView):
@@ -116,6 +135,20 @@ class TaskCreateView(generics.CreateAPIView):
     """
     serializer_class = TaskCreateSerializer
     permission_classes = [IsAuthenticated, IsBoardMember]
+
+    def create(self, request, *args, **kwargs):
+        # Serializer für Input verwenden
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Task speichern (created_by = aktueller User)
+        task = serializer.save(created_by=request.user)
+
+        # Response mit dem vollen nested TaskSerializer erzeugen
+        full_serializer = TaskSerializer(task, context=self.get_serializer_context())
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(full_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class AssignedToMeTasksView(generics.ListAPIView):
