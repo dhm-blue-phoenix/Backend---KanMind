@@ -22,8 +22,8 @@ done
 echo "Starte Setup..."
 
 # Virtuelle Umgebung erstellen
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 
 # Requirements installieren
 pip install -r requirements.txt

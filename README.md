@@ -85,7 +85,7 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
       python manage.py runserver
       ```
 
-## Vscode
+## Vscode (finds the workspace at: __".setup/"__)
 The server can also be started in vscode via: 
 - Start Django server with debugger (F5) <br>
 - Django run server per Task (STRG+SHIFT+B) <br> <br>

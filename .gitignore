@@ -24,7 +24,7 @@ db.sqlite3
 .DS_Store
 .mypy_cache/
 .pytest_cache/
-.vscode/
+# .vscode/
 .idea/
 coverage.xml
 htmlcov/

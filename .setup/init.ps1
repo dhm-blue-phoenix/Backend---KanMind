@@ -17,8 +17,8 @@ foreach ($arg in $args) {
 Write-Host "Starte Setup..." -ForegroundColor Cyan
 
 # Virtuelle Umgebung erstellen
-python -m venv venv
-& "venv\Scripts\Activate.ps1"
+python -m venv .venv
+& ".venv\Scripts\Activate.ps1"
 
 pip install -r requirements.txt
 
