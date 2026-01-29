@@ -16,7 +16,8 @@ from .permissions import IsBoardMember, IsBoardOwner, IsTaskCreatorOrBoardOwner,
 from .serializers import (
     UserEmailCheckSerializer, BoardSerializer, BoardDetailSerializer,
     BoardUpdateSerializer, TaskCreateSerializer, TaskSerializer,
-    TaskUpdateSerializer, CommentSerializer, CommentCreateSerializer
+    TaskListSerializer, TaskDetailSerializer, TaskUpdateSerializer,
+    CommentSerializer, CommentCreateSerializer
 )
 from board_app.models import Board, Task, Comment
 
@@ -89,7 +90,7 @@ class BoardDetailView(APIView):
         board = self.get_object(board_id)
         if not board:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer = BoardDetailSerializer(board)
+        serializer = BoardDetailSerializer(board, context={'request': request})
         return Response(serializer.data)
 
     def patch(self, request, board_id):
@@ -112,7 +113,7 @@ class BoardDetailView(APIView):
         # Board neu laden für frische Response
         board.refresh_from_db()
 
-        return Response(BoardDetailSerializer(board).data)
+        return Response(BoardDetailSerializer(board, context={'request': request, 'customBoardResposns': 'patch'}).data)
 
     def delete(self, request, board_id):
         board = self.get_object(board_id)
@@ -145,7 +146,7 @@ class TaskCreateView(generics.CreateAPIView):
         task = serializer.save(created_by=request.user)
 
         # Response mit dem vollen nested TaskSerializer erzeugen
-        full_serializer = TaskSerializer(task, context=self.get_serializer_context())
+        full_serializer = TaskDetailSerializer(task, context=self.get_serializer_context())
 
         headers = self.get_success_headers(serializer.data)
         return Response(full_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -156,7 +157,7 @@ class AssignedToMeTasksView(generics.ListAPIView):
     GET /api/tasks/assigned-to-me/
     Lists tasks where the user is the assignee.
     """
-    serializer_class = TaskSerializer
+    serializer_class = TaskListSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -171,7 +172,7 @@ class ReviewingTasksView(generics.ListAPIView):
     GET /api/tasks/reviewing/
     Lists tasks where the user is the reviewer.
     """
-    serializer_class = TaskSerializer
+    serializer_class = TaskListSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -206,8 +207,8 @@ class TaskDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         updated_task = serializer.save()
     
-        # ← Hier der Fix: einfach TaskSerializer (ohne serializers.)
-        return Response(TaskSerializer("patch", updated_task).data)
+        # Return updated task with custom response mode passed via context
+        return Response(TaskDetailSerializer(updated_task, context={'request': request, 'customTaskResposns': 'patch'}).data)
 
     def delete(self, request, task_id):
         task = self.get_object(task_id)
