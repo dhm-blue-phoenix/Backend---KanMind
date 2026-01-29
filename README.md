@@ -34,10 +34,12 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
       pip install -r requirements.txt
       ```
 
-4. Apply migrations:
+4. Apply migrations: <br>
+      Erstellen sie einen ordner unter **./board_app/** namens **```migrations```**. <br>
+      Und anschliessend eine datei unter **./board_app/migrations/** namens **```__init__.py```**
+
       ```
       python manage.py makemigrations
-      python manage.py makemigrations board_app
       python manage.py migrate
       ```
 

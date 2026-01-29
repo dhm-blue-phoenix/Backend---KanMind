@@ -201,10 +201,13 @@ class TaskDetailView(APIView):
         task = self.get_object(task_id)
         if not task:
             return Response(status=status.HTTP_404_NOT_FOUND)
+    
         serializer = TaskUpdateSerializer(task, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        updated_task = serializer.save()
+    
+        # ← Hier der Fix: einfach TaskSerializer (ohne serializers.)
+        return Response(TaskSerializer("patch", updated_task).data)
 
     def delete(self, request, task_id):
         task = self.get_object(task_id)

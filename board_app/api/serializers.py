@@ -68,10 +68,21 @@ class TaskSerializer(serializers.ModelSerializer):
             'assignee', 'reviewer', 'due_date', 'comments_count'
         ]
 
+    def __init__(self, *args, **kwargs):
+        # allow passing a custom response mode either via kwarg or via context
+        self.customTaskResposns = kwargs.pop('customTaskResposns', None)
+        context = kwargs.get('context') or {}
+        if not self.customTaskResposns and isinstance(context, dict):
+            self.customTaskResposns = context.get('customTaskResposns')
+        super().__init__(*args, **kwargs)
+
     def to_representation(self, instance):
-        return {
+        # allow context to override when serializer was bound as a nested field
+        mode = self.customTaskResposns or (self.context or {}).get('customTaskResposns')
+
+        base = {
             "id": instance.id,
-            "board": instance.board_id,
+            # "board": instance.board_id,
             "title": instance.title,
             "description": instance.description or "",
             "status": instance.status,
@@ -79,8 +90,12 @@ class TaskSerializer(serializers.ModelSerializer):
             "assignee": UserEmailCheckSerializer(instance.assignee).data if instance.assignee else None,
             "reviewer": UserEmailCheckSerializer(instance.reviewer).data if instance.reviewer else None,
             "due_date": instance.due_date.isoformat() if instance.due_date else None,
-            "comments_count": instance.comments_count()
         }
+        if mode == "patch":
+            return base
+        base["comments_count"] = instance.comments_count()
+        return base
+
 
 class BoardDetailSerializer(serializers.ModelSerializer):
     """
@@ -179,39 +194,36 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
     Serializer for updating tasks (partial).
     Validates status, priority, assignee/reviewer.
     """
-    assignee_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='assignee')
-    reviewer_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='reviewer')
+    assignee_id = serializers.IntegerField(write_only=True, required=False)
+    reviewer_id = serializers.IntegerField(write_only=True, required=False)
 
     class Meta:
         model = Task
-        fields = [
-            'title', 'description', 'status', 'priority',
-            'assignee_id', 'reviewer_id', 'due_date'
-        ]
+        fields = ['title', 'description', 'status', 'priority', 'assignee_id', 'reviewer_id', 'due_date']
 
-    def validate_status(self, value):
-        if value not in dict(STATUS_CHOICES):
-            raise serializers.ValidationError(f"Status muss einer von: {', '.join(dict(STATUS_CHOICES))} sein.")
-        return value
+    def update(self, instance, validated_data):
+        # IDs aus validated_data holen und in echte User umwandeln
+        assignee_id = validated_data.pop('assignee_id', None)
+        reviewer_id = validated_data.pop('reviewer_id', None)
 
-    def validate_priority(self, value):
-        if value not in dict(PRIORITY_CHOICES):
-            raise serializers.ValidationError(f"Priority muss einer von: {', '.join(dict(PRIORITY_CHOICES))} sein.")
-        return value
+        if assignee_id is not None:
+            try:
+                instance.assignee = User.objects.get(id=assignee_id)
+            except User.DoesNotExist:
+                raise serializers.ValidationError({"assignee_id": f"User mit ID {assignee_id} existiert nicht"})
 
-    def validate(self, data):
-        task = self.instance
-        board = task.board
+        if reviewer_id is not None:
+            try:
+                instance.reviewer = User.objects.get(id=reviewer_id)
+            except User.DoesNotExist:
+                raise serializers.ValidationError({"reviewer_id": f"User mit ID {reviewer_id} existiert nicht"})
 
-        for field in ['assignee', 'reviewer']:
-            user = data.get(field)
-            if user is not None and (user != board.owner and user not in board.members.all()):
-                raise serializers.ValidationError({field: f"Der {field} muss Mitglied des Boards sein."})
+        # Normale Felder aktualisieren
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
 
-        return data
-
-    def to_representation(self, instance):
-        return TaskSerializer(instance).data
+        instance.save()
+        return instance
 
 
 class CommentSerializer(serializers.ModelSerializer):
