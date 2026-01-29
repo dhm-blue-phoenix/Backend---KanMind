@@ -15,7 +15,7 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
       ```
 
 2. For the setup script from:
-      ### Under Windwos
+      ### Under Windwos (Powershell)
       ```
       .setup/init.ps1
       ```

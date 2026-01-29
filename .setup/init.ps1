@@ -47,5 +47,3 @@ if ($RunServer) {
     Write-Host "Starte Django Server..." -ForegroundColor Green
     python manage.py runserver
 }
-
-Write-Host "Fertig." -ForegroundColor Cyan
