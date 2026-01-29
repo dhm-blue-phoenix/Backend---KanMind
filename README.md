@@ -39,42 +39,80 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
       Und anschliessend eine datei unter **./board_app/migrations/** namens **```__init__.py```**
 
       ```
-      python manage.py makemigrations
-      python manage.py migrate
+      # Django KanMind API
+
+      This repository contains the backend API for KanMind, built with Django and Django REST Framework.
+
+      ## Technologies
+      - Django
+      - Django REST Framework (DRF)
+
+      ## Quick start
+      1. Clone the repository:
+
+         ```bash
+         git clone <repo-url>
+         cd Backend---KanMind
+         ```
+
+      2. Create and activate a virtual environment:
+
+         ```bash
+         python -m venv .venv
+         # Windows
+         .venv\Scripts\activate
+         # macOS / Linux
+         source .venv/bin/activate
+         ```
+
+      3. Install dependencies:
+
+         ```bash
+         pip install -r requirements.txt
+         ```
+
+      4. Apply migrations and create the database (SQLite is used for local development):
+
+         ```bash
+         python manage.py makemigrations
+         python manage.py migrate
+         ```
+
+      5. Create a superuser for admin access (optional):
+
+         ```bash
+         python manage.py createsuperuser
+         ```
+
+      6. Run the development server:
+
+         ```bash
+         python manage.py runserver
+         ```
+
+      ## Tests & Coverage
+      Run tests with coverage locally:
+
+      ```bash
+      pip install pytest pytest-cov
+      pytest --maxfail=1 --disable-warnings -q --cov=. --cov-fail-under=95
       ```
 
-5. Create a superuser (for admin):
-      ```
-      python manage.py createsuperuser
-      ```
+      The project includes a GitHub Actions workflow that runs the test suite and enforces a minimum coverage of 95%.
 
-6. Run the server:
-      ```
-      python manage.py runserver
-      ```
+      ## API Endpoints
+      - Authentication: `/api/registration/`, `/api/login/`
+      - Boards: `/api/boards/`, `/api/boards/{id}/`
+      - Tasks: `/api/tasks/`, `/api/tasks/{id}/`, `/api/tasks/assigned-to-me/`, `/api/tasks/reviewing/`
+      - Comments: `/api/tasks/{task_id}/comments/`, `/api/tasks/{task_id}/comments/{comment_id}/`
+      - Email check: `/api/email-check/?email=...`
 
-## API Endpoints
-- Authentication: <br>
-      `/api/registration/`, <br>
-      `/api/login/`
+      ## Notes
+      - Token authentication (DRF token) is configured in `core/settings.py`.
+      - Admin panel: `/admin/`.
 
-- Boards: <br>
-      `/api/boards/`, <br>
-      `/api/boards/{id}/`
+      ## DoD / Remaining Requirements
+      - Remove committed database: Done (should be removed from Git history if pushed to remote).
+      - README is now in English and documents setup and tests.
 
-- Tasks: <br>
-      `/api/tasks/`, <br>
-      `/api/tasks/{id}/`, <br>
-      `/api/tasks/assigned-to-me/`, <br>
-      `/api/tasks/reviewing/`
-
-- Comments: <br>
-      `/api/tasks/{task_id}/comments/`, <br>
-      `/api/tasks/{task_id}/comments/{comment_id}/`
-
-- Other: <br>
-      `/api/email-check/?email=...`
-
-## Notes
-- Uses Token Authentication.
-- Admin panel available at `/admin/`.
+      If you want, I can also add formatting (black) and linting (flake8) configuration, or set up pre-commit hooks.

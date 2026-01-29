@@ -101,7 +101,6 @@ class BoardDetailView(APIView):
         serializer = BoardUpdateSerializer(board, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
-        # Explizit aktualisieren
         if 'title' in serializer.validated_data:
             board.title = serializer.validated_data['title']
 
@@ -110,7 +109,6 @@ class BoardDetailView(APIView):
         if 'members' in serializer.validated_data:
             board.members.set(serializer.validated_data['members'])
 
-        # Board neu laden für frische Response
         board.refresh_from_db()
 
         return Response(BoardDetailSerializer(board, context={'request': request, 'customBoardResposns': 'patch'}).data)
@@ -138,14 +136,11 @@ class TaskCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated, IsBoardMember]
 
     def create(self, request, *args, **kwargs):
-        # Serializer für Input verwenden
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Task speichern (created_by = aktueller User)
         task = serializer.save(created_by=request.user)
 
-        # Response mit dem vollen nested TaskSerializer erzeugen
         full_serializer = TaskDetailSerializer(task, context=self.get_serializer_context())
 
         headers = self.get_success_headers(serializer.data)
@@ -207,7 +202,6 @@ class TaskDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         updated_task = serializer.save()
     
-        # Return updated task with custom response mode passed via context
         return Response(TaskDetailSerializer(updated_task, context={'request': request, 'customTaskResposns': 'patch'}).data)
 
     def delete(self, request, task_id):

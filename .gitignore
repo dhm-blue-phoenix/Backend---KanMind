@@ -1,16 +1,43 @@
-# created by virtualenv automatically
-.idea
-.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.venv/
+venv\
+ENV/
+env.bak/
+instance/
+db.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+instance/
+db.sqlite3
+.DS_Store
+.mypy_cache/
+.pytest_cache/
+.vscode/
+.idea/
+coverage.xml
+htmlcov/
 
-auth_app/__pycache__
-auth_app/api/__pycache__
-auth_app/migrations
+auth_app/__pycache__/
+auth_app/api/__pycache__/
+auth_app/migrations/
 
-board_app/__pycache__
-board_app/api/__pycache__
-board_app/migrations/__pycache__
-board_app/migrations
+board_app/__pycache__/
+board_app/api/__pycache__/
+board_app/migrations/__pycache__/
+board_app/migrations/
 
-core/__pycache__
+core/__pycache__/
 
 db.sqlite3

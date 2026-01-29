@@ -69,7 +69,6 @@ class TaskSerializer(serializers.ModelSerializer):
         ]
 
     def __init__(self, *args, **kwargs):
-        # allow passing a custom response mode either via kwarg or via context
         self.customTaskResposns = kwargs.pop('customTaskResposns', None)
         context = kwargs.get('context') or {}
         if not self.customTaskResposns and isinstance(context, dict):
@@ -77,12 +76,10 @@ class TaskSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
 
     def to_representation(self, instance):
-        # allow context to override when serializer was bound as a nested field
         mode = self.customTaskResposns or (self.context or {}).get('customTaskResposns')
 
         base = {
             "id": instance.id,
-            # "board": instance.board_id,
             "title": instance.title,
             "description": instance.description or "",
             "status": instance.status,
@@ -169,11 +166,10 @@ class BoardDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Board
-        fields = ['id', 'title', 'owner_data', 'members_data', 'tasks']  # ← genau diese Felder!
+        fields = ['id', 'title', 'owner_data', 'members_data', 'tasks']
         read_only_fields = ['id', 'owner_data', 'members_data', 'tasks']
 
     def __init__(self, *args, **kwargs):
-        # allow passing a custom response mode either via kwarg or via context
         self.customBoardResposns = kwargs.pop('customBoardResposns', None)
         context = kwargs.get('context') or {}
         if not self.customBoardResposns and isinstance(context, dict):
@@ -196,7 +192,6 @@ class BoardDetailSerializer(serializers.ModelSerializer):
         ).data
         return base
 
-    # Optional: Bei PATCH Title + Members aktualisieren
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         if 'members' in validated_data:
@@ -287,7 +282,6 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
         fields = ['title', 'description', 'status', 'priority', 'assignee_id', 'reviewer_id', 'due_date']
 
     def update(self, instance, validated_data):
-        # IDs aus validated_data holen und in echte User umwandeln
         assignee_id = validated_data.pop('assignee_id', None)
         reviewer_id = validated_data.pop('reviewer_id', None)
 
@@ -303,7 +297,6 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
             except User.DoesNotExist:
                 raise serializers.ValidationError({"reviewer_id": f"User mit ID {reviewer_id} existiert nicht"})
 
-        # Normale Felder aktualisieren
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
