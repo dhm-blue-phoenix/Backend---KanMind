@@ -44,7 +44,7 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
       --run
       ```
 
-## Manue's setup without setup file
+## Manual setup without setup file
 2. Create and activate a virtual environment:
       ```
       python -m venv .venv
