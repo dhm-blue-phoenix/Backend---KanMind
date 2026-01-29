@@ -1,0 +1,52 @@
+{
+    "folders": [
+        {
+            "path": ".."
+        }
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "venv/bin/python",
+        "terminal.integrated.env.linux": {
+            "VIRTUAL_ENV": "${workspaceFolder}/venv",
+            "PATH": "${workspaceFolder}/venv/bin:${env:PATH}"
+        },
+        "terminal.integrated.env.windows": {
+            "VIRTUAL_ENV": "${workspaceFolder}\\venv",
+            "PATH": "${workspaceFolder}\\venv\\Scripts;${env:PATH}"
+        },
+        "auto-run-command.rules": [
+            {
+                "event": "onStartupFinished",
+                "command": "workbench.action.tasks.runTask",
+                "args": "Django Runserver"
+            }
+        ]
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "Django Server",
+                "type": "python",
+                "request": "launch",
+                "program": "${workspaceFolder}/manage.py",
+                "args": ["runserver"],
+                "django": true
+            }
+        ]
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "Django Runserver",
+                "type": "shell",
+                "command": "python3 manage.py runserver",
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                }
+            }
+        ]
+    }
+}

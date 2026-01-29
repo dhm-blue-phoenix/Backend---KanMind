@@ -39,7 +39,7 @@ if ($CreateSuperuser) {
 # Optional: VS Code starten
 if ($OpenVSCode) {
     Write-Host "Starte VS Code..." -ForegroundColor Green
-    code .
+    code ".setup\KannMint.code-workspace"
 }
 
 # Optional: Server starten

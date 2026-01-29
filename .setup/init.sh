@@ -43,7 +43,7 @@ fi
 
 # Optional: VS Code öffnen
 if [ "$OPEN_VSCODE" = true ]; then
-    code .
+    code .setup/KannMint.code-workspace
 fi
 
 # Optional: Server starten

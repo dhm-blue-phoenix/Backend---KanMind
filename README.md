@@ -88,7 +88,10 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
 ## Vscode
 The server can also be started in vscode via: 
 - Start Django server with debugger (F5) <br>
-- Django run server per Task (STRG+SHIFT+B)
+- Django run server per Task (STRG+SHIFT+B) <br> <br>
+In workspace, the task is set to autostart but can only be used via an extension: <br>
+Name: __Auto Run Command__ <br>
+Publisher: __Augustin Riedinger__
 
 ## API Endpoints
 - Authentication: `/api/registration/`, `/api/login/`
