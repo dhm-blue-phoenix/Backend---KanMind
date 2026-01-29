@@ -85,9 +85,14 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
       python manage.py runserver
       ```
 
-      ## API Endpoints
-      - Authentication: `/api/registration/`, `/api/login/`
-      - Boards: `/api/boards/`, `/api/boards/{id}/`
-      - Tasks: `/api/tasks/`, `/api/tasks/{id}/`, `/api/tasks/assigned-to-me/`, `/api/tasks/reviewing/`
-      - Comments: `/api/tasks/{task_id}/comments/`, `/api/tasks/{task_id}/comments/{comment_id}/`
-      - Email check: `/api/email-check/?email=...`
+## Vscode
+The server can also be started in vscode via: 
+- Start Django server with debugger (F5) <br>
+- Django run server per Task (STRG+SHIFT+B)
+
+## API Endpoints
+- Authentication: `/api/registration/`, `/api/login/`
+- Boards: `/api/boards/`, `/api/boards/{id}/`
+- Tasks: `/api/tasks/`, `/api/tasks/{id}/`, `/api/tasks/assigned-to-me/`, `/api/tasks/reviewing/`
+- Comments: `/api/tasks/{task_id}/comments/`, `/api/tasks/{task_id}/comments/{comment_id}/`
+- Email check: `/api/email-check/?email=...`
