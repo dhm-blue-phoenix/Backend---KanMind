@@ -9,6 +9,7 @@
             "args": [
                 "runserver"
             ],
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
             "django": true
         }
     ]
