@@ -14,21 +14,22 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
       cd Backend---KanMind
       ```
 
-2. For the setup script from:
-      ### Under Windwos (Powershell)
+## Setting up with setup file
+2. For the setup on:
+      ### Windwos (Powershell)
       ```
       .setup/init.ps1
       ```
 
-      ### On Linux
+      ### Linux
       ```
-      chmod +x ./setup/init.sh
+      chmod +x .setup/init.sh
       .setup/init.sh
       ```
 
       ### Optional Parameters
       Both parameters can also be specified. <br>
-      Example: file ``` --superuser --code --run ```
+      Example: .setup/init ``` --superuser --code --run ```
 
       Set up setup with superuser <br>
       ```
@@ -41,6 +42,47 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
       Start server right in the console <br>
       ```
       --run
+      ```
+
+## Manue's setup without setup file
+2. Create and activate a virtual environment:
+      ```
+      python -m venv .venv
+      ```
+
+      ### On Windows
+      ```
+      .venv\Scripts\activate
+      ```
+
+      ### On Linux
+      ```
+      . .venv/bin/activate
+      ```
+
+3. Install dependencies:
+      ```
+      pip install -r requirements.txt
+      ```
+
+4. Apply migrations and create the database (SQLite is used for local development): <br>
+
+      Create a folder under **./board_app/** named **"'migrations"'**. <br>
+      And then a file under **./board_app/migrations/** called **"'__init__.py"'** <br>
+
+      ```
+      python manage.py makemigrations
+      python manage.py migrate
+      ```
+
+5. Create a superuser for admin access (optional):
+      ```
+      python manage.py createsuperuser
+      ```
+
+6. Run the development server:
+      ```
+      python manage.py runserver
       ```
 
       ## API Endpoints
