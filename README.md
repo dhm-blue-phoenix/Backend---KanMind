@@ -17,13 +17,13 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
 2. For the setup script from:
       ### Under Windwos
       ```
-      ./setup/init.cmd
+      .setup/init.ps1
       ```
 
       ### On Linux
       ```
       chmod +x ./setup/init.sh
-      ./setup/init.sh
+      .setup/init.sh
       ```
 
       ### Optional Parameters
@@ -42,7 +42,6 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
       ```
       --run
       ```
-
 
       ## API Endpoints
       - Authentication: `/api/registration/`, `/api/login/`
