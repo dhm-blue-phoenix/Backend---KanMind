@@ -9,8 +9,8 @@ Welcome to the backend of the KanMind project! This Django-based API provides th
 See [PROJECT_STATUS.md](PROJECT_STATUS.md) for complete endpoint documentation and test results.
 
 ## Requirements
-**Python:** 3.12 (the project expects Python 3.12 for local development).
-Verify the Python used by the project's virtual environment: <br>
+**Python:** 3.12 (the project requires Python 3.12 or higher for local development).
+Check your Python version: <br>
 
 System Python check:
 ```
