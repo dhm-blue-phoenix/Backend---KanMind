@@ -77,10 +77,6 @@ echo "Virtuelle Umgebung aktiviert → $(python --version)"
 pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 
-# Migrations-Ordner sicherstellen
-mkdir -p board_app/migrations
-touch board_app/migrations/__init__.py
-
 # Django Migrations
 python manage.py makemigrations
 python manage.py migrate

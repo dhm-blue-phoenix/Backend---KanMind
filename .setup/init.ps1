@@ -54,10 +54,6 @@ python -m venv .venv
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Migrations-Ordner + __init__.py (falls nicht vorhanden)
-New-Item -ItemType Directory -Path "board_app\migrations" -Force | Out-Null
-New-Item -ItemType File -Path "board_app\migrations\__init__.py" -Force | Out-Null
-
 # Django Migrations
 python manage.py makemigrations
 python manage.py migrate

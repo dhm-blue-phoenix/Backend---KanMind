@@ -96,10 +96,6 @@ All tests should pass with ✓ PASS indicators.
       ```
 
 4. Apply migrations and create the database (SQLite is used for local development): <br>
-
-      Create a folder under **./board_app/** named **```migrations```**. <br>
-      And then a file under **./board_app/migrations/** called **```__init__.py```** <br>
-
       ```
       python manage.py makemigrations
       python manage.py migrate
