@@ -2,12 +2,6 @@
 
 Welcome to the backend of the KanMind project! This Django-based API provides the server logic for an application. It allows managing boards, tasks and users through RESTful endpoints.
 
-## ✅ Project Status
-**COMPLETE AND FULLY TESTED** - All endpoints implemented according to API documentation with full test coverage.
-
-## API Endpoints
-See [PROJECT_STATUS.md](PROJECT_STATUS.md) for complete endpoint documentation and test results.
-
 ## Requirements
 **Python:** 3.12 (the project requires Python 3.12 or higher for local development).
 Check your Python version: <br>
