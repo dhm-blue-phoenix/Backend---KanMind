@@ -1,5 +1,18 @@
 Clear-Host
 
+# Ensure required Python version
+$RequiredVersion = '3.12'
+try {
+    $pyOutput = & python --version 2>&1
+} catch {
+    Write-Host "Python not found in PATH. Install Python $RequiredVersion and try again." -ForegroundColor Red
+    exit 1
+}
+if ($pyOutput -notmatch "Python $RequiredVersion") {
+    Write-Host "Python $RequiredVersion is required. Found: $pyOutput" -ForegroundColor Red
+    exit 1
+}
+
 # Parameter-Flags
 $CreateSuperuser = $false
 $RunServer = $false

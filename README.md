@@ -2,10 +2,14 @@
 
 Welcome to the backend of the KanMind project! This Django-based API provides the server logic for an application. It allows managing boards, tasks and users through RESTful endpoints.
 
-## Technologies
-- Django: Web framework for Python
-- Django REST Framework: For API development
-- SQLite: Database (default for local development)
+## Requirements
+**Python:** 3.12 (the project expects Python 3.12 for local development).
+Verify the Python used by the project's virtual environment: <br>
+
+System Python check:
+```
+python --version
+```
 
 ## Quick start
 1. Clone the repository and navigate to the folder:

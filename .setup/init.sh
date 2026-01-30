@@ -2,6 +2,24 @@
 
 clear
 
+# Require Python 3.12
+REQUIRED="3.12"
+if command -v python3.12 >/dev/null 2>&1; then
+    PY=python3.12
+elif command -v python3 >/dev/null 2>&1; then
+    PY=python3
+elif command -v python >/dev/null 2>&1; then
+    PY=python
+else
+    echo "Python not found in PATH. Install Python $REQUIRED and try again."
+    exit 1
+fi
+VER=$($PY --version 2>&1)
+if [[ "$VER" != "Python $REQUIRED"* ]]; then
+    echo "Python $REQUIRED is required. Found: $VER"
+    exit 1
+fi
+
 CREATE_SUPERUSER=false
 RUNSERVER=false
 OPEN_VSCODE=false
