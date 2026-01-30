@@ -10,6 +10,9 @@ class IsBoardMember(BasePermission):
     Grants access if the user is a member or owner of the board.
     Works for Board, Task, and Comment objects.
     """
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
         if isinstance(obj, Board):
             return obj.owner == request.user or request.user in obj.members.all()

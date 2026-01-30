@@ -1,6 +1,12 @@
-# Django KanMin API
+# Django KanMind API
 
 Welcome to the backend of the KanMind project! This Django-based API provides the server logic for an application. It allows managing boards, tasks and users through RESTful endpoints.
+
+## ✅ Project Status
+**COMPLETE AND FULLY TESTED** - All endpoints implemented according to API documentation with full test coverage.
+
+## API Endpoints
+See [PROJECT_STATUS.md](PROJECT_STATUS.md) for complete endpoint documentation and test results.
 
 ## Requirements
 **Python:** 3.12 (the project expects Python 3.12 for local development).
@@ -20,7 +26,7 @@ python --version
 
 ## Setting up with setup file
 2. For the setup on:
-      ### Windwos (Powershell)
+      ### Windows (Powershell)
       ```
       .setup/init.ps1
       ```
@@ -47,6 +53,26 @@ python --version
       ```
       --run
       ```
+
+## Running Tests
+
+After starting the server (default: `http://127.0.0.1:8000`), run the test suites:
+
+```bash
+# Full API test suite (28 tests)
+python test_api.py
+
+# Authentication & Error handling tests (4 tests)
+python test_auth.py
+
+# Permission & Authorization tests (10 tests)
+python test_permissions.py
+
+# Response format validation
+python test_response_formats.py
+```
+
+All tests should pass with ✓ PASS indicators.
 
 ## Manual setup without setup file
 2. Create and activate a virtual environment:

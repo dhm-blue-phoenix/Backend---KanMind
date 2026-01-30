@@ -28,6 +28,8 @@ class BoardSerializer(serializers.ModelSerializer):
     Serializer for Board list/create.
     Handles creation with members and custom representation for stats.
     """
+    members = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
+
     class Meta:
         model = Board
         fields = ['id', 'title', 'members', 'owner_id']
@@ -38,7 +40,8 @@ class BoardSerializer(serializers.ModelSerializer):
         request = self.context['request']
         board = Board.objects.create(owner=request.user, **validated_data)
         board.members.set(members_data)
-        board.members.add(request.user)
+        if request.user not in members_data:
+            board.members.add(request.user)
         return board
 
     def to_representation(self, instance):
@@ -107,8 +110,7 @@ class TaskListSerializer(serializers.ModelSerializer):
         fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date', 'comments_count']
 
     def to_representation(self, instance):
-        mode = (self.context or {}).get('customTaskResposns')
-        base = {
+        return {
             'id': instance.id,
             'board': instance.board_id,
             'title': instance.title,
@@ -118,11 +120,8 @@ class TaskListSerializer(serializers.ModelSerializer):
             'assignee': UserEmailCheckSerializer(instance.assignee).data if instance.assignee else None,
             'reviewer': UserEmailCheckSerializer(instance.reviewer).data if instance.reviewer else None,
             'due_date': instance.due_date.isoformat() if instance.due_date else None,
+            'comments_count': instance.comments_count(),
         }
-        if mode == 'patch':
-            return base
-        base['comments_count'] = instance.comments_count()
-        return base
 
 
 class TaskDetailSerializer(serializers.ModelSerializer):
@@ -138,8 +137,7 @@ class TaskDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date', 'comments_count']
 
     def to_representation(self, instance):
-        mode = (self.context or {}).get('customTaskResposns')
-        base = {
+        return {
             'id': instance.id,
             'title': instance.title,
             'description': instance.description or "",
@@ -148,68 +146,55 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             'assignee': UserEmailCheckSerializer(instance.assignee).data if instance.assignee else None,
             'reviewer': UserEmailCheckSerializer(instance.reviewer).data if instance.reviewer else None,
             'due_date': instance.due_date.isoformat() if instance.due_date else None,
+            'comments_count': instance.comments_count(),
         }
-        if mode == 'patch':
-            return base
-        base['comments_count'] = instance.comments_count()
-        return base
 
 
 class BoardDetailSerializer(serializers.ModelSerializer):
     """
-    Serializer for detailed board view.
-    Includes nested members and tasks.
+    Serializer for detailed board view (GET).
+    Includes nested members (as list) and tasks.
     """
-    owner_data = UserEmailCheckSerializer(source='owner', read_only=True)
-    members_data = UserEmailCheckSerializer(source='members', many=True, read_only=True)
+    members = UserEmailCheckSerializer(source='members', many=True, read_only=True)
     tasks = TaskDetailSerializer(many=True, read_only=True)
 
     class Meta:
         model = Board
-        fields = ['id', 'title', 'owner_data', 'members_data', 'tasks']
-        read_only_fields = ['id', 'owner_data', 'members_data', 'tasks']
-
-    def __init__(self, *args, **kwargs):
-        self.customBoardResposns = kwargs.pop('customBoardResposns', None)
-        context = kwargs.get('context') or {}
-        if not self.customBoardResposns and isinstance(context, dict):
-            self.customBoardResposns = context.get('customBoardResposns')
-        super().__init__(*args, **kwargs)
+        fields = ['id', 'title', 'owner_id', 'members', 'tasks']
+        read_only_fields = ['id', 'owner_id', 'members', 'tasks']
 
     def to_representation(self, instance):
-        mode = self.customBoardResposns or (self.context or {}).get('customBoardResposns')
-        base = {
+        return {
             'id': instance.id,
             'title': instance.title,
-            'owner_data': UserEmailCheckSerializer(instance.owner).data,
-            'members_data': UserEmailCheckSerializer(instance.members.all(), many=True).data,
+            'owner_id': instance.owner_id,
+            'members': UserEmailCheckSerializer(instance.members.all(), many=True).data,
+            'tasks': TaskDetailSerializer(
+                instance.tasks.all(), many=True,
+                context=self.context or {}
+            ).data
         }
-        if mode == 'patch':
-            return base
-        base['tasks'] = TaskDetailSerializer(
-            instance.tasks.all(), many=True,
-            context={**(self.context or {}), 'customTaskResposns': mode}
-        ).data
-        return base
-
-    def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        if 'members' in validated_data:
-            instance.members.set(validated_data['members'])
-        instance.save()
-        return instance
 
 
 class BoardUpdateSerializer(serializers.ModelSerializer):
     """
-    Serializer for updating board (title/members).
+    Serializer for updating board (title/members via PATCH).
     Partial updates allowed.
+    Returns owner_data and members_data in response.
     """
     members = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
 
     class Meta:
         model = Board
         fields = ['title', 'members']
+
+    def to_representation(self, instance):
+        return {
+            'id': instance.id,
+            'title': instance.title,
+            'owner_data': UserEmailCheckSerializer(instance.owner).data,
+            'members_data': UserEmailCheckSerializer(instance.members.all(), many=True).data,
+        }
 
 
 
@@ -227,7 +212,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         model = Task
         fields = [
             'id', 'board', 'title', 'description', 'status', 'priority',
-            'assignee_id', 'reviewer_id', 'due_date', 'comments_count',
+            'assignee_id', 'reviewer_id', 'due_date',
         ]
 
     def validate_status(self, value):
@@ -280,6 +265,33 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['title', 'description', 'status', 'priority', 'assignee_id', 'reviewer_id', 'due_date']
+
+    def validate_status(self, value):
+        if value not in dict(STATUS_CHOICES):
+            raise serializers.ValidationError(f"Status muss einer von: {', '.join(dict(STATUS_CHOICES))} sein.")
+        return value
+
+    def validate_priority(self, value):
+        if value not in dict(PRIORITY_CHOICES):
+            raise serializers.ValidationError(f"Priority muss einer von: {', '.join(dict(PRIORITY_CHOICES))} sein.")
+        return value
+
+    def validate(self, attrs):
+        instance = self.instance
+        board = instance.board
+        request = self.context.get('request')
+
+        for field in ['assignee_id', 'reviewer_id']:
+            user_id = attrs.get(field)
+            if user_id is not None:
+                try:
+                    user = User.objects.get(id=user_id)
+                    if user != board.owner and user not in board.members.all():
+                        raise serializers.ValidationError({field: f"Der {field.replace('_id', '')} muss Mitglied des Boards sein."})
+                except User.DoesNotExist:
+                    raise serializers.ValidationError({field: f"User mit ID {user_id} existiert nicht"})
+
+        return attrs
 
     def update(self, instance, validated_data):
         assignee_id = validated_data.pop('assignee_id', None)

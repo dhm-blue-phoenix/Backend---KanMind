@@ -1,41 +1,60 @@
 Clear-Host
 
-# Ensure required Python version
-$RequiredVersion = '3.12'
+# Mindestens Python 3.12 erforderlich (Django 6.0)
+$MinMajor = 3
+$MinMinor = 12
+
 try {
     $pyOutput = & python --version 2>&1
+    if ($LASTEXITCODE -ne 0) { throw }
 } catch {
-    Write-Host "Python not found in PATH. Install Python $RequiredVersion and try again." -ForegroundColor Red
+    Write-Host "Python nicht im PATH gefunden. Installiere Python >= 3.12 und versuche es erneut." -ForegroundColor Red
     exit 1
 }
-if ($pyOutput -notmatch "Python $RequiredVersion") {
-    Write-Host "Python $RequiredVersion is required. Found: $pyOutput" -ForegroundColor Red
+
+# Version parsen
+if ($pyOutput -match "Python (\d+)\.(\d+)") {
+    $major = [int]$Matches[1]
+    $minor = [int]$Matches[2]
+    
+    if ($major -lt $MinMajor -or ($major -eq $MinMajor -and $minor -lt $MinMinor)) {
+        Write-Host "Python >= $MinMajor.$MinMinor erforderlich für Django 6.0. Gefunden: $pyOutput" -ForegroundColor Red
+        exit 1
+    }
+} else {
+    Write-Host "Konnte Python-Version nicht parsen: $pyOutput" -ForegroundColor Red
     exit 1
 }
+
+Write-Host "Python-Version OK: $pyOutput" -ForegroundColor Green
 
 # Parameter-Flags
 $CreateSuperuser = $false
-$RunServer = $false
-$OpenVSCode = $false
+$RunServer       = $false
+$OpenVSCode      = $false
 
 # Parameter prüfen
 foreach ($arg in $args) {
-    switch ($arg) {
+    switch ($arg.ToLower()) {
         "--superuser" { $CreateSuperuser = $true }
-        "--run"       { $RunServer = $true }
-        "--code"      { $OpenVSCode = $true }
+        "--run"       { $RunServer       = $true }
+        "--code"      { $OpenVSCode      = $true }
     }
 }
 
 Write-Host "Starte Setup..." -ForegroundColor Cyan
 
-# Virtuelle Umgebung erstellen
+# Virtuelle Umgebung erstellen (nutzt den gerade geprüften python)
 python -m venv .venv
+
+# Aktivieren
 & ".venv\Scripts\Activate.ps1"
 
+# Requirements installieren
+pip install --upgrade pip
 pip install -r requirements.txt
 
-# Ordner + __init__.py
+# Migrations-Ordner + __init__.py (falls nicht vorhanden)
 New-Item -ItemType Directory -Path "board_app\migrations" -Force | Out-Null
 New-Item -ItemType File -Path "board_app\migrations\__init__.py" -Force | Out-Null
 

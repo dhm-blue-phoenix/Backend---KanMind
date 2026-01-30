@@ -28,6 +28,7 @@ db.sqlite3
 .idea/
 coverage.xml
 htmlcov/
+tests
 
 auth_app/__pycache__/
 auth_app/api/__pycache__/
@@ -36,7 +37,7 @@ auth_app/migrations/
 board_app/__pycache__/
 board_app/api/__pycache__/
 board_app/migrations/__pycache__/
-board_app/migrations/
+board_app/migrations/0001_initial.py
 
 core/__pycache__/
 
