@@ -1,7 +1,5 @@
-# Django
 from django.urls import path
 
-# Local imports
 from .views import UserRegistrationView, UserLoginView
 
 urlpatterns = [

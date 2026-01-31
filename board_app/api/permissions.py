@@ -1,7 +1,5 @@
-# Django REST Framework
 from rest_framework.permissions import BasePermission
 
-# Local imports
 from board_app.models import Board, Task, Comment
 
 

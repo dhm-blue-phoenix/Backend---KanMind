@@ -1,13 +1,8 @@
-# Django
 from django.contrib.auth.models import User
 
-# Django REST Framework
 from rest_framework import serializers
-from rest_framework import status
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 
-# Local imports
 from board_app.models import Board, Task, Comment, STATUS_CHOICES, PRIORITY_CHOICES
 
 
@@ -29,7 +24,12 @@ class UserEmailCheckSerializer(serializers.ModelSerializer):
 class BoardSerializer(serializers.ModelSerializer):
     """
     Serializer for Board list/create.
-    Handles creation with members and custom representation for stats.
+
+    POST Request Body:
+    {
+        "title": "string" (required),
+        "members": [integer] (optional) – user IDs
+    }
     """
     members = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
 
@@ -61,9 +61,10 @@ class BoardSerializer(serializers.ModelSerializer):
 
 class TaskSerializer(serializers.ModelSerializer):
     """
-    Serializer for Task representation.
-    Includes nested assignee/reviewer and custom output.
+        Serializer for Task representation.
+        Includes nested assignee/reviewer and custom output.
     """
+
     assignee = UserEmailCheckSerializer(read_only=True)
     reviewer = UserEmailCheckSerializer(read_only=True)
 
@@ -75,14 +76,14 @@ class TaskSerializer(serializers.ModelSerializer):
         ]
 
     def __init__(self, *args, **kwargs):
-        self.customTaskResposns = kwargs.pop('customTaskResposns', None)
+        self.customTaskResponse = kwargs.pop('customTaskResponse', None)
         context = kwargs.get('context') or {}
-        if not self.customTaskResposns and isinstance(context, dict):
-            self.customTaskResposns = context.get('customTaskResposns')
+        if not self.customTaskResponse and isinstance(context, dict):
+            self.customTaskResponse = context.get('customTaskResponse')
         super().__init__(*args, **kwargs)
 
     def to_representation(self, instance):
-        mode = self.customTaskResposns or (self.context or {}).get('customTaskResposns')
+        mode = self.customTaskResponse or (self.context or {}).get('customTaskResponse')
 
         base = {
             "id": instance.id,
@@ -102,15 +103,17 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class TaskListSerializer(serializers.ModelSerializer):
     """
-    Serializer for task lists (shows board id).
-    Used for AssignedToMe and Reviewing lists.
+        Serializer for detailed board view (GET).
+        Includes nested members (as list) and tasks.
     """
+
     assignee = UserEmailCheckSerializer(read_only=True)
     reviewer = UserEmailCheckSerializer(read_only=True)
 
     class Meta:
         model = Task
-        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date', 'comments_count']
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date',
+                  'comments_count']
 
     def to_representation(self, instance):
         return {
@@ -137,7 +140,8 @@ class TaskDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['id', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date', 'comments_count']
+        fields = ['id', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date',
+                  'comments_count']
 
     def to_representation(self, instance):
         return {
@@ -181,9 +185,13 @@ class BoardDetailSerializer(serializers.ModelSerializer):
 
 class BoardUpdateSerializer(serializers.ModelSerializer):
     """
-    Serializer for updating board (title/members via PATCH).
-    Partial updates allowed.
-    Returns owner_data and members_data in response.
+    Serializer for updating board (PATCH).
+
+    Request Body (partial):
+    {
+        "title": "string" (optional),
+        "members": [integer] (optional) – user IDs
+    }
     """
     members = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
 
@@ -203,10 +211,23 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
 class TaskCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating tasks.
-    Validates status, priority, assignee/reviewer membership.
+
+    Request Body:
+    {
+        "board": integer (required),
+        "title": "string" (required),
+        "description": "string" (optional),
+        "status": "string" (required),
+        "priority": "string" (required),
+        "assignee_id": integer (optional),
+        "reviewer_id": integer (optional),
+        "due_date": "YYYY-MM-DD" (optional)
+    }
     """
-    assignee_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='assignee')
-    reviewer_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='reviewer')
+    assignee_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True,
+                                                     source='assignee')
+    reviewer_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True,
+                                                     source='reviewer')
     board = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -228,7 +249,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         board_id = attrs.get('board')
-        
+
         if isinstance(board_id, Board):
             board = board_id
         else:
@@ -257,8 +278,18 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
 class TaskUpdateSerializer(serializers.ModelSerializer):
     """
-    Serializer for updating tasks (partial).
-    Validates status, priority, assignee/reviewer.
+    Serializer for updating tasks (PATCH).
+
+    Request Body (partial):
+    {
+        "title": "string" (optional),
+        "description": "string" (optional),
+        "status": "string" (optional),
+        "priority": "string" (optional),
+        "assignee_id": integer (optional),
+        "reviewer_id": integer (optional),
+        "due_date": "YYYY-MM-DD" (optional)
+    }
     """
     assignee_id = serializers.IntegerField(write_only=True, required=False)
     reviewer_id = serializers.IntegerField(write_only=True, required=False)
@@ -288,7 +319,8 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
                 try:
                     user = User.objects.get(id=user_id)
                     if user != board.owner and user not in board.members.all():
-                        raise serializers.ValidationError({field: f"Der {field.replace('_id', '')} muss Mitglied des Boards sein."})
+                        raise serializers.ValidationError(
+                            {field: f"Der {field.replace('_id', '')} muss Mitglied des Boards sein."})
                 except User.DoesNotExist:
                     raise serializers.ValidationError({field: f"User mit ID {user_id} existiert nicht"})
 
@@ -335,8 +367,13 @@ class CommentSerializer(serializers.ModelSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating comments.
-    Content only, author/task from context.
+
+    Request Body:
+    {
+        "content": "string" (required)
+    }
     """
+
     class Meta:
         model = Comment
         fields = ['content']

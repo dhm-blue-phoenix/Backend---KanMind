@@ -29,3 +29,6 @@ board_app/migrations/0001_initial.py
 core/__pycache__/
 
 db.sqlite3
+
+.setup/
+.vscode/

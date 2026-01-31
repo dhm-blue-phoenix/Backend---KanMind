@@ -1,7 +1,5 @@
-# Django REST Framework
 from django.urls import path
 
-# Local imports
 from .views import (
     EmailCheckView, BoardListCreateView, BoardDetailView, TaskCreateView,
     AssignedToMeTasksView, ReviewingTasksView, TaskDetailView, TaskCommentsListCreateView,
