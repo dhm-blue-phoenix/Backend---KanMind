@@ -18,36 +18,6 @@ python --version
       cd Backend---KanMind
       ```
 
-## Setting up with setup file
-2. For the setup on:
-      ### Windows (Powershell)
-      ```
-      .setup/init.ps1
-      ```
-
-      ### Linux
-      ```
-      chmod +x .setup/init.sh
-      .setup/init.sh
-      ```
-
-      ### Optional Parameters
-      Both parameters can also be specified. <br>
-      Example: .setup/init ``` --superuser --code --run ```
-
-      Set up setup with superuser <br>
-      ```
-      --superuser
-      ```
-      Start Code Editor (VScode) with <br>
-      ```
-      --code
-      ```
-      Start server right in the console <br>
-      ```
-      --run
-      ```
-
 ## Manual setup without setup file
 2. Create and activate a virtual environment:
       ```
@@ -84,14 +54,6 @@ python --version
       ```
       python manage.py runserver
       ```
-
-## Vscode (finds the workspace at: __".setup/"__)
-The server can also be started in vscode via: 
-- Start Django server with debugger (F5) <br>
-- Django run server per Task (STRG+SHIFT+B) <br> <br>
-In workspace, the task is set to autostart but can only be used via an extension: <br>
-Name: __Auto Run Command__ <br>
-Publisher: __Augustin Riedinger__
 
 ## API Endpoints
 - Authentication: `/api/registration/`, `/api/login/`

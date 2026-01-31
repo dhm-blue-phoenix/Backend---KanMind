@@ -64,4 +64,4 @@ class UserLoginView(APIView):
                     'user_id': user.id,
                 }, status=status.HTTP_200_OK)
         else:
-            return Response({"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)

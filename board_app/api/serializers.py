@@ -3,6 +3,9 @@ from django.contrib.auth.models import User
 
 # Django REST Framework
 from rest_framework import serializers
+from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotFound
 
 # Local imports
 from board_app.models import Board, Task, Comment, STATUS_CHOICES, PRIORITY_CHOICES
@@ -197,9 +200,6 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
         }
 
 
-
-
-
 class TaskCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating tasks.
@@ -207,6 +207,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
     """
     assignee_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='assignee')
     reviewer_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True, source='reviewer')
+    board = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Task
@@ -226,19 +227,19 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        board_input = attrs.get('board')
+        board_id = attrs.get('board')
         
-        if isinstance(board_input, Board):
-            board = board_input
+        if isinstance(board_id, Board):
+            board = board_id
         else:
             try:
-                board = Board.objects.get(id=board_input)
+                board = Board.objects.get(id=board_id)
             except Board.DoesNotExist:
-                raise serializers.ValidationError({"board": "Board nicht gefunden."})
+                raise NotFound(detail={"board": "Board nicht gefunden."})
 
         request = self.context['request']
         if request.user != board.owner and request.user not in board.members.all():
-            raise serializers.ValidationError({"board": "Du bist kein Mitglied dieses Boards."})
+            raise PermissionDenied({"board": "Du bist kein Mitglied dieses Boards."})
 
         for field in ['assignee', 'reviewer']:
             user = attrs.get(field)
