@@ -15,7 +15,7 @@ from rest_framework.request import Request
 from .serializers import (
     UserEmailCheckSerializer, BoardSerializer, BoardDetailSerializer,
     BoardUpdateSerializer, TaskCreateSerializer, TaskListSerializer,
-    TaskDetailSerializer, TaskUpdateSerializer, CommentSerializer,
+    TaskDetailSerializer, TaskUpdateSerializer, TaskSerializer, CommentSerializer,
     CommentCreateSerializer
 )
 from board_app.models import Board, Task, Comment
@@ -166,8 +166,8 @@ class TaskCreateView(generics.CreateAPIView):
 
         task: Task = serializer.save(created_by=request.user)
         
-        # Return detailed response with all task info
-        output_serializer = TaskDetailSerializer(
+        # Return response with board field using TaskListSerializer
+        output_serializer = TaskListSerializer(
             task,
             context=self.get_serializer_context()
         )
@@ -261,6 +261,23 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
            self.request.user not in task.board.members.all():
             self.permission_denied(self.request)
         serializer.save()
+
+    def update(self, request: Request, *args, **kwargs) -> Response:
+        """Update task and return response WITHOUT board or comments_count"""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Return response WITHOUT board or comments_count using TaskSerializer with patch mode
+        context = self.get_serializer_context()
+        context['customTaskResposns'] = 'patch'
+        detail_serializer = TaskSerializer(
+            instance,
+            context=context
+        )
+        return Response(detail_serializer.data)
 
     def perform_destroy(self, instance: Task) -> None:
         """Delete task (creator or board owner only)"""
