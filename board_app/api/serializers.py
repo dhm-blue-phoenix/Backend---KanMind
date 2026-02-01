@@ -103,8 +103,8 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class TaskListSerializer(serializers.ModelSerializer):
     """
-        Serializer for detailed board view (GET).
-        Includes nested members (as list) and tasks.
+        Serializer for task list response.
+        Includes nested assignee/reviewer and custom output.
     """
 
     assignee = UserEmailCheckSerializer(read_only=True)
@@ -353,8 +353,10 @@ class CommentSerializer(serializers.ModelSerializer):
     """
     Serializer for Comment representation.
     Author as full name.
+    Returns: id, created_at (ISO format), author (fullname), content
     """
     author = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -362,6 +364,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         return obj.author.get_full_name().strip() or obj.author.username
+
+    def get_created_at(self, obj):
+        # Return ISO format: "2025-02-20T14:30:00Z"
+        return obj.created_at.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
@@ -377,6 +383,11 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['content']
+
+    def validate_content(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Der Inhalt des Kommentars darf nicht leer sein.")
+        return value
 
     def create(self, validated_data):
         task = self.context['task']

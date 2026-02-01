@@ -50,16 +50,18 @@ class IsCommentAuthor(BasePermission):
             return obj.author == request.user
         return False
 
-
 class IsTaskBoardMember(IsBoardMember):
     """
     Grants access if the user is a member or owner of the task's board.
     Used for comment list/create views (checks via task_id in kwargs).
-    Assumes task exists (handled separately in view).
     """
     def has_permission(self, request, view):
         task_id = view.kwargs.get('task_id')
         if task_id is None:
             return False
-        task = Task.objects.get(id=task_id)
+        try:
+            task = Task.objects.get(id=task_id)
+        except Task.DoesNotExist:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Die angeforderte Task wurde nicht gefunden.")
         return self.has_object_permission(request, view, task)

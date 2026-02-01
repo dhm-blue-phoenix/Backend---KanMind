@@ -4,9 +4,9 @@ from django.db.models import Q, QuerySet
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.http import Http404
 
 from rest_framework import generics, status
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -304,18 +304,21 @@ class TaskCommentsListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, IsTaskBoardMember]
 
-    def dispatch(self, request, *args, **kwargs):
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
         task_id = self.kwargs.get('task_id')
         if task_id is not None:
             try:
                 Task.objects.get(id=task_id)
             except Task.DoesNotExist:
-                raise Http404("Task nicht gefunden.")
-        return super().dispatch(request, *args, **kwargs)
+                raise NotFound("Die angeforderte Task wurde nicht gefunden.")
 
     def get_queryset(self) -> QuerySet:
         task_id: int = int(self.kwargs.get('task_id'))
-        task = Task.objects.get(id=task_id)
+        try:
+            task = Task.objects.get(id=task_id)
+        except Task.DoesNotExist:
+            raise NotFound("Die angeforderte Task wurde nicht gefunden.")
         return Comment.objects.filter(task=task)
 
     def get_serializer_class(self):
@@ -326,7 +329,10 @@ class TaskCommentsListCreateView(generics.ListCreateAPIView):
     def get_serializer_context(self) -> dict:
         context = super().get_serializer_context()
         task_id = int(self.kwargs.get('task_id'))
-        task = Task.objects.get(id=task_id)
+        try:
+            task = Task.objects.get(id=task_id)
+        except Task.DoesNotExist:
+            raise NotFound("Die angeforderte Task wurde nicht gefunden.")
         context['task'] = task
         return context
 
@@ -341,7 +347,10 @@ class TaskCommentsListCreateView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         comment = serializer.save()
 
-        output_serializer = CommentSerializer(comment)
+        output_serializer = CommentSerializer(
+            comment,
+            context=self.get_serializer_context()
+        )
         return Response(
             output_serializer.data,
             status=status.HTTP_201_CREATED
@@ -358,21 +367,21 @@ class TaskCommentDeleteView(generics.DestroyAPIView):
     lookup_field = 'id'
     lookup_url_kwarg = 'comment_id'
 
-    def dispatch(self, request, *args, **kwargs):
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
         task_id = self.kwargs.get('task_id')
         if task_id is not None:
             try:
                 Task.objects.get(id=task_id)
             except Task.DoesNotExist:
-                raise Http404("Task nicht gefunden.")
-        return super().dispatch(request, *args, **kwargs)
+                raise NotFound("Die angeforderte Task wurde nicht gefunden.")
 
     def get_object(self) -> Comment:
         comment: Comment = super().get_object()
 
         task_id = int(self.kwargs.get('task_id'))
         if comment.task_id != task_id:
-            raise Http404("Comment gehört nicht zu diesem Task")
+            raise NotFound("Der Kommentar gehört nicht zu dieser Task.")
 
         return comment
 
